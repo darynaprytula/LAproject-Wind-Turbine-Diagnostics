@@ -20,6 +20,18 @@ TREND_FILE = "trend_summary.xlsx"
 OUTPUT_ROOT = "results"
 
 def collect_files(root):
+    """
+    Collect all signal file paths from the directory structure.
+
+    The function traverses the root folder and gathers all .cms files,
+    organizing them by turbine and sensor.
+
+    Parameters:
+    root(str) : root directory containing turbine folders.
+
+    Returns:
+    list of tuples : each tuple contains (turbine, sensor, filepath).
+    """
     items = []
 
     for turbine_entry in os.scandir(root):
@@ -46,6 +58,23 @@ def collect_files(root):
 
 
 def process_full(args):
+    """
+    Process a single signal file and extract features.
+
+    The function loads signal data, computes broadband features,
+    extracts metadata, and calculates frequency-selective characteristics.
+
+    Parameters:
+    args(tuple) : (turbine, sensor, filepath).
+
+    Returns:
+    tuple or None :
+        (turbine, row, fsc_rows) where:
+        - turbine : turbine identifier
+        - row(dict) : extracted metadata and time-domain features
+        - fsc_rows(list) : frequency-selective characteristics
+    None is returned if loading fails.
+    """
     turbine, sensor, filepath = args
 
     try:
@@ -114,7 +143,16 @@ def process_full(args):
     return turbine, row, fsc_rows
 
 def main():
+    """
+    Run full signal processing and analysis pipeline.
 
+    The function:
+    - Collects all signal files
+    - Processes them in parallel
+    - Computes time-domain and frequency-domain features
+    - Saves results to CSV and Excel files
+    - Performs trend analysis on extracted features
+    """
     if not os.path.exists(SIGNALS_FOLDER):
         raise ValueError("Signals folder not found")
 
