@@ -114,7 +114,7 @@ We analyze how features evolve over time using the **Mann–Kendall test**.
 
 ---
 
-## Pros and Cons
+## Pros and Cons of our algorithms
 
 ### Pros
 - Interpretable results linked to physical components  
@@ -159,6 +159,93 @@ Planned:
 - Python  
 - NumPy  
 - Matplotlib  
+---
+
+## Project Structure
+
+The repository is organized into modular components, each responsible for a specific stage of the pipeline.
+
+---
+
+### signals-by-sensors/
+
+Raw dataset organized by turbines and sensors.
+
+  - `data-WTG511/`, `data-WTG513/`, `data-WTG515/`, `data-WTG656/` – signal files for each turbine containing signals collected from 8 sensors
+
+---
+
+### config/
+
+Contains configuration files and physical parameters used in the analysis.
+
+  - `Kinematics.json` – mechanical characteristics of components (e.g., bearing frequencies such as BPFO, BPFI, etc.)
+  - `parameters.py` – global constants, thresholds, and processing settings
+
+---
+
+### utils/
+
+Utility functions used across the project.
+
+ - `helpers.py` – helper functions (e.g., string cleaning for safe filenames)
+
+---
+
+### data/
+
+Responsible for loading and organizing raw vibration data.
+
+  - `signal_loader.py` – loads vibration signals and metadata from files
+  - `sorting_signals.py` – groups and structures signals (by turbine, sensor, etc.)
+
+---
+
+### features/
+
+Implements feature extraction from vibration signals in both time and frequency domains.
+
+  - `fft.py` – manual FFT implementation (Cooley–Tukey) and comparison with NumPy
+  - `amplitude_spectrum.py` – computation of one-sided amplitude spectrum
+  - `broadband_characteristics.py` – broadband vibration features
+  - `operating_stats.py` – time-domain statistical features (RMS, kurtosis, etc.)
+  - `fsc.py` – frequency-selective characteristics extraction
+  - `plot_spectra.py` – visualization of spectra
+  - `compare_plots.py` – comparison plots (manual FFT vs NumPy FFT)
+
+---
+
+### trend_analysis/
+
+Implements trend detection and fault diagnostics.
+
+  - `trend_analysis.py` – main logic for trend computation
+  - `metrics_trend.py` – tracking feature evolution over time
+  - fsc_trend.py` – trends of frequency-selective features
+  - `classification.py` – classification of potential defects
+  - `thresholds.py` – threshold definitions for anomaly detection
+  - `trend_plots.py` – visualization of trends
+
+---
+
+### results (plots)/
+
+Generated outputs and visualizations.
+
+  - `fft_compare_plots/` – comparison of manual FFT and NumPy FFT
+  - `fft_plots/` – frequency spectra
+  - `fsc_plots/` – frequency-selective characteristics
+  - `trends_results/time_features/` – trend analysis results for time-domain features
+
+---
+
+### main/
+
+Core pipeline execution.
+
+  - `main.py` – entry point of the project
+  - `process_file.py` – processes a single signal through the full pipeline
+  - `results_exporter.py` – saves computed features and results to files (e.g., CSV)
 
 ---
 
