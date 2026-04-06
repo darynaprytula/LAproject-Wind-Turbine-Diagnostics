@@ -7,6 +7,18 @@ DARK_BLUE = "#0B3D91"
 
 
 def fft(x):
+    """
+    Compute the Fast Fourier Transform (FFT) of a signal using recursion.
+
+    The function implements the Cooley–Tukey FFT algorithm by recursively
+    splitting the signal into even and odd indexed parts.
+
+    Parameters:
+    x : input signal (list of complex or real numbers).
+
+    Returns:
+    list : complex FFT values of the signal.
+    """
     N = len(x)
     if N <= 1:
         return x
@@ -21,6 +33,18 @@ def fft(x):
 
 
 def next_pow2(n):
+    """
+    Auxiliary fucntion for FFT which computes the next power of two greater than or equal to n.
+
+    The function is used to determine the required zero-padding size
+    for efficient FFT computation.
+
+    Parameters:
+    n(int) : input length.
+
+    Returns:
+    int : smallest power of 2 such that p >= n.
+    """
     p = 1
     while p < n:
         p *= 2
@@ -28,6 +52,23 @@ def next_pow2(n):
 
 
 def manual_fft(signal, fs):
+    """
+    Compute FFT manually and return frequency spectrum.
+
+    The function applies zero-padding to the next power of two,
+    computes FFT using a custom implementation, and constructs
+    corresponding frequency bins.
+
+    Parameters:
+    signal : input discrete-time signal x[n].
+    fs(float) : sampling frequency of the signal (in Hz).
+
+    Returns:
+    freqs(list of float) : frequency values (both positive and negative).
+    magnitude(list of float) : magnitude spectrum |X(f)|.
+    fft_output(list of complex) : complex FFT values.
+    signal_pad(list of float) : zero-padded signal.
+    """
     signal = [float(x) for x in signal]
 
     N0 = len(signal)
@@ -49,6 +90,22 @@ def manual_fft(signal, fs):
 
 
 def library_fft(signal, fs):
+    """
+    Compute FFT using NumPy implementation.
+
+    The function applies zero-padding to the next power of two,
+    computes FFT using numpy.fft, and constructs frequency bins.
+
+    Parameters:
+    signal : input discrete-time signal x[n].
+    fs(float) : sampling frequency of the signal (in Hz).
+
+    Returns:
+    freqs(array of float) : frequency values (both positive and negative).
+    magnitude(array of float) : magnitude spectrum |X(f)|.
+    np_fft(array of complex) : complex FFT values.
+    signal_pad(array) : zero-padded signal.
+    """
     signal = np.asarray(signal, dtype=float)
 
     N0 = len(signal)
@@ -63,6 +120,20 @@ def library_fft(signal, fs):
 
 
 def fft_plot(signal, fs, title="FFT Spectrum"):
+    """
+    Plot magnitude spectrum using manual FFT.
+
+    The function computes FFT using manual implementation and
+    visualizes the magnitude spectrum.
+
+    Parameters:
+    signal : input discrete-time signal x[n].
+    fs(float) : sampling frequency (in Hz).
+    title(str) : title of the plot (default is "FFT Spectrum").
+
+    Returns:
+    None
+    """
     freqs, magnitude, fft_output, signal_pad = manual_fft(signal, fs)
 
     plt.figure(figsize=(10, 4))
@@ -75,6 +146,20 @@ def fft_plot(signal, fs, title="FFT Spectrum"):
 
 
 def numpy_fft_plot(signal, fs, title="NumPy FFT"):
+    """
+    Plot magnitude spectrum using NumPy FFT.
+
+    The function computes FFT using numpy implementation and
+    visualizes the magnitude spectrum.
+
+    Parameters:
+    signal : input discrete-time signal x[n].
+    fs(float) : sampling frequency (in Hz).
+    title(str) : title of the plot (default is "NumPy FFT").
+
+    Returns:
+    None
+    """
     freqs, magnitude, np_fft, signal_pad = library_fft(signal, fs)
 
     plt.figure(figsize=(10, 4))
@@ -87,6 +172,28 @@ def numpy_fft_plot(signal, fs, title="NumPy FFT"):
 
 
 def compare_fft_plot(signal, fs, title="FFT Comparison"):
+    """
+    Compare manual FFT and NumPy FFT results visually and numerically.
+
+    The function computes FFT using both implementations, plots their
+    magnitude spectra, and evaluates numerical differences between them.
+
+    Parameters:
+    signal : input discrete-time signal x[n].
+    fs(float) : sampling frequency (in Hz).
+    title(str) : title prefix for the plots.
+
+    Returns:
+    None
+
+    Notes:
+    - Computes max and mean complex error between FFT outputs.
+    - Uses np.allclose with tolerance 1e-9 to check equivalence.
+    - Produces two visualizations:
+        1) Separate subplots for manual and NumPy FFT.
+        2) Combined overlay comparison plot.
+    - Prints error metrics to console.
+    """
     manual_freqs, manual_magnitude, my_fft, signal_pad = manual_fft(signal, fs)
     numpy_freqs, numpy_magnitude, np_fft, signal_pad = library_fft(signal, fs)
 
