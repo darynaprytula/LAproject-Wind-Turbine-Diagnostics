@@ -1,0 +1,100 @@
+{
+  "Bearings": [
+    {
+      "sensor": 1,
+      "TR": 79.46,
+      "Manufacturer": "Rothe Erde",
+      "Signature": "190.60.2212.000.62.1300",
+      "Type": "CMS_BT_CYLINDRICAL_ROLLER",
+      "Name": "Rotor_RBG",
+      "BPFO": 47.0,
+      "BPFI": 63.0,
+      "FTF": 0.5,
+      "BSF2": 36.8667
+    },
+    {
+      "sensor": 3,
+      "TR": 79.46,
+      "Manufacturer": "INA/FAG",
+      "Signature": "SL1818/670 E BR GKSL 0404",
+      "Type": "CMS_BT_CYLINDRICAL_ROLLER",
+      "Name": "GBX_In_BRG1",
+      "BPFO": 30.9,
+      "BPFI": 34.1,
+      "FTF": 0.476,
+      "BSF2": 20.7
+    },
+    {
+      "sensor": 5,
+      "TR": 1,
+      "Manufacturer": "INA/FAG",
+      "Signature": "F-809092",
+      "Type": "CMS_BT_CYLINDRICAL_ROLLER",
+      "Name": "GBX_OUT_BRG2",
+      "BPFO": 7.7,
+      "BPFI": 10.3,
+      "FTF": 0.4,
+      "BSF2": 6.6
+    },
+    {
+      "sensor": 6,
+      "TR": 1,
+      "Manufacturer": "INA/FAG",
+      "Signature": "F-800902",
+      "Type": "CMS_BT_CYLINDRICAL_ROLLER",
+      "Name": "GBX_OUT_BRG1",
+      "BPFO": 20.7,
+      "BPFI": 23.3,
+      "FTF": 0.4,
+      "BSF2": 15.5
+    },
+    {
+      "sensor": 7,
+      "TR": 1,
+      "Manufacturer": "SKF",
+      "Signature": "6344",
+      "Type": "CMS_BT_BALL_BEARING",
+      "Name": "Gen_DE_BRG",
+      "BPFO": 3.66,
+      "BPFI": 5.34,
+      "FTF": 0.407,
+      "BSF2": 5.168
+    },
+    {
+      "sensor": 8,
+      "TR": 1,
+      "Manufacturer": "SKF",
+      "Signature": "6344",
+      "Type": "CMS_BT_BALL_BEARING",
+      "Name": "Gen_NDE_RBG",
+      "BPFO": 3.66,
+      "BPFI": 5.34,
+      "FTF": 0.407,
+      "BSF2": 5.168
+    }
+  ],
+
+  "Gears": [
+    {
+      "sensor": 6,
+      "TR0": 1,
+      "Type": "Pinion gear",
+      "Name": "GBX-Out_Pinion",
+      "Teeth_Number": 44
+    },
+    {
+      "sensor": 5,
+      "TR1": 0.396,
+      "Type": "Wheel gear",
+      "Name": "GBX-Out_Wheel",
+      "Teeth_Number": 111
+    },
+    {
+      "sensor": 4,
+      "TR2": 6.109,
+      "Type": "Sun gear",
+      "Name": "GBX-Mid_Sun",
+      "Teeth_Number": 24
+    }
+  ]
+}
