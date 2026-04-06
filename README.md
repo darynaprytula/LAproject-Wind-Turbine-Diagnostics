@@ -168,5 +168,4 @@ Each team member prepared an individual video presentation:
 
 - Daryna Prytula – [Watch video](https://your-link-1)
 - Sofiia Pereima – [Watch video](https://youtu.be/V23egEHX_H0)
-- Bohdana Zubrytska – [Watch video](https://your-link-3)
-
+- Bohdana Zubrytska – [Watch video](https://youtu.be/uYoiu0prEwA?si=fYNYHlaT13hsdP0O)
