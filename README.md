@@ -20,7 +20,7 @@ We use real vibration data collected from wind turbines:
 
 - 4 turbines: WTG511, WTG513, WTG515, WTG656  
 - 8 accelerometers (sensors)  
-- ~10,908 signal records  
+- 2815 signal records  
 - Duration per signal: 6 hours  
 - Frequency band: 1000 Hz  
 - Frequency resolution: ~0.156 Hz  
