@@ -13,6 +13,18 @@ DARK_BLUE = "#0B3D91"
 
 
 def clean_name(name):
+    """
+    Clean a string to make it safe for file and directory names.
+
+    The function replaces invalid filesystem characters and spaces
+    to ensure compatibility across operating systems.
+
+    Parameters:
+    name : input string (e.g., turbine name, filename).
+
+    Returns:
+    name(str) : cleaned string with invalid characters replaced by "_".
+    """
     name = str(name)
     name = re.sub(r'[\\/*?:"<>|]', "_", name)
     name = name.replace(" ", "_")
@@ -20,6 +32,23 @@ def clean_name(name):
 
 
 def save_fft_plot_from_signal(signal, fs, turbine, sensor, filename, output_root):
+    """
+    Compute and save amplitude spectrum plot from a signal.
+
+    The function generates a file path based on turbine and sensor identifiers
+    and saves the amplitude spectrum plot using save_amplitude_spectrum_plot.
+
+    Parameters:
+    signal : input discrete-time signal x[n].
+    fs(float) : sampling frequency of the signal (in Hz).
+    turbine : turbine identifier/name.
+    sensor : sensor identifier (e.g., sensor number).
+    filename : name of the source file.
+    output_root(str) : root directory where plots will be saved.
+
+    Returns:
+    None
+    """
     save_path = os.path.join(
         output_root,
         "fft_plots",
@@ -37,6 +66,28 @@ def save_fft_plot_from_signal(signal, fs, turbine, sensor, filename, output_root
 
 
 def save_fsc_plot_from_processed_signal(sig, turbine, sensor, filename, output_root, band=1.0):
+    """
+    Compute and save frequency-selective characteristics (FSC) plot.
+
+    The function extracts signal and metadata, computes the amplitude spectrum,
+    determines characteristic frequencies based on rotation speed, and highlights
+    peaks near those frequencies.
+
+    Parameters:
+    sig : dictionary containing processed signal data:
+        - "signal" : signal values
+        - "sample_rate" : sampling frequency
+        - "raw" : original raw data
+        - "meta" : metadata (optional)
+    turbine : turbine identifier/name.
+    sensor : sensor identifier (used to select bearing characteristics).
+    filename : name of the source file.
+    output_root(str) : root directory where plots will be saved.
+    band(float) : frequency search window around target frequencies (default is 1.0 Hz).
+
+    Returns:
+    None
+    """
     signal = sig["signal"]
     fs = sig["sample_rate"]
     raw = sig["raw"]
