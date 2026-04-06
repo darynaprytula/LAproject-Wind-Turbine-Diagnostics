@@ -7,6 +7,20 @@ DARK_BLUE = "#0B3D91"
 
 
 def amplitude_spectrum(signal, fs):
+    """
+    Compute the amplitude spectrum of a signal using FFT.
+
+    The function applies manual FFT (via function manual_fft) and converts
+    the complex FFT output into a one-sided amplitude spectrum.
+
+    Parameters:
+    signal : input discrete-time signal x[n].
+    fs(float) : sampling frequency of the signal (in Hz).
+
+    Returns:
+    frequencies(list of float) : frequency bins corresponding to the amplitude values (0 to fs/2).
+    amplitude(list of float) : one-sided amplitude spectrum values.
+    """
     freqs, magnitude, fft_output, signal_pad = manual_fft(signal, fs)
 
     N = len(signal_pad)
@@ -24,6 +38,20 @@ def amplitude_spectrum(signal, fs):
 
 
 def amplitude_spectrum_plot(signal, fs, title="Amplitude Spectrum"):
+    """
+    Plot the amplitude spectrum of a signal.
+    
+    The function computes the amplitude spectrum using function amplitude_spectrum
+    and visualizes it using Matplotlib.
+    
+    Parameters:
+    signal : input discrete-time signal x[n].
+    fs(float) : sampling frequency of the signal (in Hz).
+    title(str) : title of the plot (default is "Amplitude Spectrum").
+    
+    Returns:
+    None
+    """
     frequencies, amplitude = amplitude_spectrum(signal, fs)
 
     plt.figure(figsize=(10, 4))
@@ -37,6 +65,21 @@ def amplitude_spectrum_plot(signal, fs, title="Amplitude Spectrum"):
 
 
 def save_amplitude_spectrum_plot(signal, fs, title="Amplitude Spectrum", save_path=None):
+    """
+    Compute and save (or display) the amplitude spectrum plot.
+    
+    The function computes the amplitude spectrum using function amplitude_spectrum
+    and either saves the plot to a file or displays it.
+    
+    Parameters:
+    signal : input discrete-time signal x[n].
+    fs(float) : sampling frequency of the signal (in Hz).
+    title(str) : title of the plot (default is "Amplitude Spectrum").
+    save_path(str or None) : path to save the plot image; if None, the plot is displayed.
+    
+    Returns:
+    None
+    """
     frequencies, amplitude = amplitude_spectrum(signal, fs)
 
     plt.figure(figsize=(10, 4))
