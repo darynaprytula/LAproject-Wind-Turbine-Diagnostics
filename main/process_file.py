@@ -4,6 +4,23 @@ import os
 
 
 def process_file(filepath: str) -> dict | None:
+    """
+    Process a single signal file and extract time-domain features and metadata.
+
+    The function loads a signal file, computes broadband characteristics,
+    extracts metadata, and returns all relevant information in a structured dictionary.
+
+    Parameters:
+    filepath(str) : path to the signal file (.cms).
+
+    Returns:
+    dict or None :
+        dictionary containing:
+        - metadata (time, sensor info, signal properties)
+        - broadband features (RMS, kurtosis, etc.)
+        - mean values of WindSpeed, Power, and RPM
+    None is returned if loading or processing fails.
+    """
     try:
         sig = load_signal(filepath)
     except Exception as e:
