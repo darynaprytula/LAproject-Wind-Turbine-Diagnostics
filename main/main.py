@@ -20,18 +20,6 @@ TREND_FILE = "trend_summary.xlsx"
 OUTPUT_ROOT = "results"
 
 def collect_files(root):
-    """
-    Collect all signal file paths from the directory structure.
-
-    The function traverses the root folder and gathers all .cms files,
-    organizing them by turbine and sensor.
-
-    Parameters:
-    root(str) : root directory containing turbine folders.
-
-    Returns:
-    list of tuples : each tuple contains (turbine, sensor, filepath).
-    """
     items = []
 
     for turbine_entry in os.scandir(root):
@@ -58,23 +46,6 @@ def collect_files(root):
 
 
 def process_full(args):
-    """
-    Process a single signal file and extract features.
-
-    The function loads signal data, computes broadband features,
-    extracts metadata, and calculates frequency-selective characteristics.
-
-    Parameters:
-    args(tuple) : (turbine, sensor, filepath).
-
-    Returns:
-    tuple or None :
-        (turbine, row, fsc_rows) where:
-        - turbine : turbine identifier
-        - row(dict) : extracted metadata and time-domain features
-        - fsc_rows(list) : frequency-selective characteristics
-    None is returned if loading fails.
-    """
     turbine, sensor, filepath = args
 
     try:
@@ -141,18 +112,12 @@ def process_full(args):
     )
 
     return turbine, row, fsc_rows
-
 def main():
-    """
-    Run full signal processing and analysis pipeline.
+    print("WARNING!!!!")
+    print("This project processes a large number of signal files.")
+    print("Computation may take several minutes.")
+    print("Please wait!\n")
 
-    The function:
-    - Collects all signal files
-    - Processes them in parallel
-    - Computes time-domain and frequency-domain features
-    - Saves results to CSV and Excel files
-    - Performs trend analysis on extracted features
-    """
     if not os.path.exists(SIGNALS_FOLDER):
         raise ValueError("Signals folder not found")
 
@@ -173,14 +138,19 @@ def main():
         grouped[turbine].append(row)
         all_fsc.extend(fsc_rows)
 
-    fsc_df = pd.DataFrame(all_fsc)
-    fsc_df.to_csv(FSC_FILE, index=False)
+    if not os.path.exists(FSC_FILE):
+        fsc_df = pd.DataFrame(all_fsc)
+        fsc_df.to_csv(FSC_FILE, index=False)
+        print("FSC saved")
+    else:
+        print("FSC saved")
+        fsc_df = pd.read_csv(FSC_FILE)
 
-    print("FSC saved")
-
-    export(grouped, OUTPUT_FILE, FSC_FILE)
-
-    print("Excel saved")
+    if not os.path.exists(OUTPUT_FILE):
+        export(grouped, OUTPUT_FILE, FSC_FILE)
+        print("File with turbines analisys saved")
+    else:
+        print("File with turbines analisys saved")
 
     print("Preparing metrics dataframe...")
 
@@ -206,9 +176,6 @@ def main():
 
                 value = row.get(param)
 
-                if value is None:
-                    continue
-
                 all_metrics.append({
                     "turbine": turbine,
                     "sensor": row.get("sensor_num"),
@@ -221,18 +188,19 @@ def main():
     metrics_df = pd.DataFrame(all_metrics)
 
     print("Metrics DF ready:", metrics_df.shape)
-
     print("Computing trends...")
 
     metrics_trends = metrics_trend_analysis(metrics_df)
     fsc_trends = fsc_trend_analysis(fsc_df)
 
-    with pd.ExcelWriter(TREND_FILE) as writer:
-        metrics_trends.to_excel(writer, sheet_name="Time Features", index=False)
-        fsc_trends.to_excel(writer, sheet_name="Spectral Features", index=False)
+    if not os.path.exists(TREND_FILE):
+        with pd.ExcelWriter(TREND_FILE) as writer:
+            metrics_trends.to_excel(writer, sheet_name="Time Features", index=False)
+            fsc_trends.to_excel(writer, sheet_name="Spectral Features", index=False)
 
-    print("Trend tables saved")
-
+        print("Trend tables saved")
+    else:
+        print("Trend tables saved")
 
 if __name__ == "__main__":
     main()
