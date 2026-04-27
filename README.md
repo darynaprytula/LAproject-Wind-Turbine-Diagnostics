@@ -34,7 +34,8 @@ We use real vibration data collected from wind turbines:
 
 Each signal contains both vibration data and metadata (timestamp, operating conditions, sensor ID, etc.), which are used for further analysis.
 
-Note on timestamps: all timestamps in the dataset have a +10 year offset applied by the data provider. A value corresponding to January 2016 in Unix time represents January 2026 in this dataset. This offset is accounted for throughout the pipeline.
+Note on timestamp: all timestamps in the dataset have a +10 year offset applied  by the data provider. A value corresponding to January 2016 in Unix time represents January 2026 in this dataset. 
+
 ---
 
 ## Methodology
