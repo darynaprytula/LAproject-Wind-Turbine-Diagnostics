@@ -16,29 +16,36 @@ Wind turbines operate continuously, often in remote locations, so early fault de
 
 ## Dataset
 
+This repository includes only the 1K frequency signal files, which are sufficient for testing the project. The complete dataset is available via the link below because it is too large to store directly in GitHub.
+
+[All signals](https://drive.google.com/drive/folders/1lNUXeU5XNpskOdd4gJ6OJgpvY8bOLp0S?usp=sharing)
+
+After downloading, place the contents into the signals-by-sensors/ folder in the project root,
+keeping the folder structure: signals-by-sensors/data-WTG511/1/, data-WTG511/2/, ..., data-WTG656/8/
+
 We use real vibration data collected from wind turbines:
 
 - 4 turbines: WTG511, WTG513, WTG515, WTG656  
 - 8 accelerometers (sensors)  
-- 4706 signal records  
-- 4706 signal records  
+- 4706 signal records    
 - Duration per signal: 6 hours  
 - Frequency band: 1000 Hz and 10000 Hz
 - Frequency resolution: ~0.156 Hz  
 
 Each signal contains both vibration data and metadata (timestamp, operating conditions, sensor ID, etc.), which are used for further analysis.
 
+Note on timestamps: all timestamps in the dataset have a +10 year offset applied by the data provider. A value corresponding to January 2016 in Unix time represents January 2026 in this dataset. This offset is accounted for throughout the pipeline.
 ---
 
 ## Methodology
 
-Our pipeline consists of five main stages:
+The pipeline consists of five main stages:
 
-1. Signal representation  
-2. Time-domain analysis  
-3. Frequency-domain analysis (FFT)  
-4. Frequency-selective feature extraction  
-5. Trend analysis  
+1. Signal representation - parsing metadata from filenames, load signals from JSON files
+2. Time-domain analysis - computing statistical features (RMS, Kurtosis, Crest Factor, etc.)
+3. Frequency-domain analysis (FFT and amplitude spectrum construction)  
+4. Frequency-selective feature extraction - amplitudes at characteristic fault frequencies
+5. Trend analysis - Mann–Kendall test for early degradation detection
 
 ---
 
