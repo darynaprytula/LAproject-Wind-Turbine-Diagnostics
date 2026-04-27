@@ -2,9 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
-
 DARK_BLUE = "#0B3D91"
-
 
 def fft(x):
     """

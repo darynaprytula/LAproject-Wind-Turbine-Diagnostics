@@ -1,4 +1,5 @@
 import numpy as np
+
 def compute_thresholds(series):
     mean = np.mean(series)
     std = np.std(series)

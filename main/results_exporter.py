@@ -6,7 +6,7 @@ from openpyxl.utils import get_column_letter
 COLUMNS = [
     ("start_ms",             "Signal start time (ms)"),
     ("end_ms",               "Signal end time (ms)"),
-    ("sensor_num",           "Sensor \u2116"),
+    ("sensor_num",           "Sensor №"),
     ("duration",             "Duration (s)"),
     ("operating_conditions", "Operating conditions"),
     ("signal_type",          "Signal type"),
@@ -31,9 +31,9 @@ COLUMNS = [
 
 FSC_COMBOS = [
     ("Rotor_RBG", "BPFO"), ("Rotor_RBG", "BPFI"), ("Rotor_RBG", "FTF"), ("Rotor_RBG", "BSF2"),
-    ("GBX_In_BRG1", "BPFO"), ("GBX_In_BRG1", "BPFI"), ("GBX_In_BRG1", "FTF"), 
+    ("GBX_In_BRG1", "BPFO"), ("GBX_In_BRG1", "BPFI"), ("GBX_In_BRG1", "FTF"),
     ("GBX_In_BRG1", "BSF2"), ("GBX_OUT_BRG2", "BPFO"), ("GBX_OUT_BRG2", "BPFI"),
-    ("GBX_OUT_BRG2", "FTF"), ("GBX_OUT_BRG2", "BSF2"), ("GBX_OUT_BRG1", "BPFO"), 
+    ("GBX_OUT_BRG2", "FTF"), ("GBX_OUT_BRG2", "BSF2"), ("GBX_OUT_BRG1", "BPFO"),
     ("GBX_OUT_BRG1", "BPFI"), ("GBX_OUT_BRG1", "FTF"), ("GBX_OUT_BRG1", "BSF2"),
     ("Gen_DE_BRG", "BPFO"), ("Gen_DE_BRG", "BPFI"), ("Gen_DE_BRG", "FTF"), ("Gen_DE_BRG", "BSF2"),
     ("Gen_NDE_RBG", "BPFO"), ("Gen_NDE_RBG", "BPFI"), ("Gen_NDE_RBG", "FTF"),
@@ -53,7 +53,7 @@ VIBR_COLS = {
     "KFactor",
     "ImpulseFactor",
     "Skewness",
-    "Kurtosis"
+    "Kurtosis",
 }
 
 OPER_COLS = {"WindSpeed_mean", "Power_mean", "RPM_mean"}
@@ -74,6 +74,7 @@ COL_WIDTHS_BASE = [
     18, 18, 10, 12, 22, 12, 12, 14, 18,
     12, 14, 12, 14, 12, 12, 22, 18, 12,
 ]
+
 
 def load_fsc(fsc_csv_path: str) -> dict:
     """
@@ -175,7 +176,7 @@ def export(grouped_rows: dict, output_path: str, fsc_csv_path: str = "fsc_result
                 freq, amp = fsc.get(key, (None, None))
 
                 ws.cell(row=r_idx, column=freq_col, value=freq).fill = FSC_FILL
-                ws.cell(row=r_idx, column=amp_col, value=amp).fill  = FSC_FILL
+                ws.cell(row=r_idx, column=amp_col,  value=amp).fill  = FSC_FILL
 
         print(f"[{turbine}] -> {len(rows)} rows")
 

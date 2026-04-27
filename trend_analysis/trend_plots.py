@@ -2,24 +2,22 @@ import os
 import re
 import numpy as np
 import matplotlib.pyplot as plt
-
+import matplotlib.ticker as ticker
 from trend_analysis.trend_analisys import mann_kendall_test
 from trend_analysis.classification import classify_status
 from trend_analysis.thresholds import compute_thresholds
 
+DARK_BLUE = "#0B3D91"
 
 def clean_name(name):
     """
     Clean a string to make it safe for file and directory names.
 
-    The function replaces invalid filesystem characters and spaces
-    to ensure compatibility across operating systems.
-
     Parameters:
-    name : input string (e.g., turbine name, filename).
+    name : input string.
 
     Returns:
-    name(str) : cleaned string with invalid characters replaced by "_".
+    str : cleaned string with invalid characters replaced by "_".
     """
     name = str(name)
     name = re.sub(r'[\\/*?:"<>|]', "_", name)
@@ -27,53 +25,91 @@ def clean_name(name):
     return name
 
 
+def _make_time_axis(time_series):
+    """
+    Convert time_stamp series to readable datetime labels.
+
+    time_stamp values are Unix milliseconds stored as strings
+    (e.g. "1454824800000"). Converts to pandas DatetimeIndex
+    so matplotlib shows readable dates like "Jan 2016".
+
+    Parameters:
+    time_series : pandas Series of time_stamp strings or ints.
+
+    Returns:
+    tuple : (DatetimeIndex or numpy array, x_label string)
+    """
+    import pandas as pd
+
+    try:
+        ts = time_series.astype(str).str.strip()
+        ts_int = ts[ts != ""].astype(float)
+
+        if ts_int.empty:
+            return np.arange(len(time_series)), "Signal index"
+
+        dates = pd.to_datetime(ts_int, unit="ms")
+        dates = dates + pd.DateOffset(years=10)
+        return dates.values, "Date"
+
+    except Exception:
+        return np.arange(len(time_series)), "Signal index"
+
+
 def plotting_metrics_trend(group, turbine, sensor, parameter, output_root):
     """
     Plot and save trend analysis for time-domain features.
 
-    The function sorts the data by time, extracts the parameter series,
-    applies Mann–Kendall trend test, and visualizes the time evolution.
-
     Parameters:
-    group : dataframe containing:
-        - "time_stamp" : timestamps
-        - "value" : parameter values
-    turbine : turbine identifier/name.
-    sensor : sensor identifier.
-    parameter : name of the parameter (e.g., RMS, kurtosis).
-    output_root(str) : root directory where plots will be saved.
-
-    Returns:
-    None
+    group       : dataframe with "time_stamp" and "value" columns.
+    turbine     : turbine identifier.
+    sensor      : sensor identifier.
+    parameter   : parameter name (e.g. RMS, Kurtosis).
+    output_root : root directory for plots.
     """
-    group = group.sort_values("time_stamp")
+    group  = group.sort_values("time_stamp")
     series = group["value"].dropna()
 
     if len(series) < 15:
         return
 
-    time = group.loc[series.index, "time_stamp"]
+    x, x_label = _make_time_axis(group.loc[series.index, "time_stamp"])
 
     trend, p_value, z = mann_kendall_test(series)
-    slope = np.polyfit(np.arange(len(series)), series, 1)[0]
+    slope  = np.polyfit(np.arange(len(series)), series.values, 1)[0]
     status = classify_status(trend, z)
 
-    plt.figure(figsize=(12, 6))
-    plt.plot(time, series, alpha=0.3, label="Raw")
+    trend_line = np.poly1d(np.polyfit(np.arange(len(series)), series.values, 1))(
+        np.arange(len(series))
+    )
 
-    plt.title(f"{parameter} | {turbine} | Sensor {sensor}")
-    plt.xlabel("Time")
-    plt.ylabel(parameter)
+    mean, std, warning, alert = compute_thresholds(series)
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.plot(x, series.values, color=DARK_BLUE, alpha=0.5,
+            linewidth=0.8, label="Raw")
+    ax.plot(x, trend_line, color="#555555", linewidth=1.5,
+            linestyle="--", label="Trend line")
+
+    ax.axhline(warning, color="orange", linewidth=1.2,
+               linestyle="--", label=f"Warning ({warning:.3f})")
+    ax.axhline(alert, color="red", linewidth=1.2,
+               linestyle="--", label=f"Alert ({alert:.3f})")
+
+    ax.set_title(f"{parameter} | {turbine} | Sensor {sensor}", fontsize=11)
+    ax.set_xlabel(x_label, fontsize=10)
+    ax.set_ylabel(parameter, fontsize=10)
+    ax.grid(True, linewidth=0.4, alpha=0.5)
 
     if z is not None:
-        text = f"Trend: {trend}\np={p_value:.3f}\nZ={z:.2f}\nStatus={status}"
-        plt.text(
-            0.02, 0.95, text,
-            transform=plt.gca().transAxes,
-            verticalalignment="top"
+        text = f"Trend: {trend}  |  p={p_value:.3f}  |  Z={z:.2f}  |  Slope={slope:.2e}  |  Status={status}"
+        ax.set_title(
+            f"{parameter} | {turbine} | Sensor {sensor}\n{text}",
+            fontsize=10
         )
 
-    plt.legend()
+    ax.legend(fontsize=9, loc="upper right",
+              framealpha=0.9, ncol=2)
 
     save_dir = os.path.join(
         output_root,
@@ -81,66 +117,73 @@ def plotting_metrics_trend(group, turbine, sensor, parameter, output_root):
         "time_features",
         clean_name(turbine),
         f"Sensor_{sensor}"
-        )
+    )
     os.makedirs(save_dir, exist_ok=True)
 
     save_path = os.path.join(save_dir, f"{clean_name(parameter)}.png")
-    plt.savefig(save_path)
-    plt.close()
+    fig.savefig(save_path, bbox_inches="tight", dpi=120)
+    plt.close(fig)
 
 
 def plotting_fsc_trend(group, turbine, sensor, component, characteristic, output_root):
     """
-    Plot and save trend analysis for frequency-domain (FSC) features.
-
-    The function analyzes amplitude evolution of characteristic frequencies,
-    applies Mann–Kendall test, and visualizes trends with thresholds.
+    Plot and save trend analysis for FSC amplitude evolution.
 
     Parameters:
-    group : dataframe containing:
-        - "time_stamp" : timestamps
-        - "amplitude" : amplitude values of characteristic frequency
-    turbine : turbine identifier/name.
-    sensor : sensor identifier.
-    component : machine component (e.g., bearing, gearbox).
-    characteristic : frequency characteristic (e.g., BPFO, BPFI).
-    output_root(str) : root directory where plots will be saved.
-
-    Returns:
-    None
+    group          : dataframe with "time_stamp" and "amplitude" columns.
+    turbine        : turbine identifier.
+    sensor         : sensor identifier.
+    component      : machine component name.
+    characteristic : frequency characteristic (e.g. BPFO, BPFI).
+    output_root    : root directory for plots.
     """
-    group = group.sort_values("time_stamp")
+    group  = group.sort_values("time_stamp")
     series = group["amplitude"].dropna()
 
     if len(series) < 15:
         return
 
-    time = group.loc[series.index, "time_stamp"]
+    x, x_label = _make_time_axis(group.loc[series.index, "time_stamp"])
 
     trend, p_value, z = mann_kendall_test(series)
-    slope = np.polyfit(np.arange(len(series)), series, 1)[0]
+    slope  = np.polyfit(np.arange(len(series)), series.values, 1)[0]
     status = classify_status(trend, z)
 
-    plt.figure(figsize=(12, 6))
-    plt.plot(time, series, alpha=0.3, label="Raw")
     mean, std, warning, alert = compute_thresholds(series)
 
-    plt.axhline(warning, color="orange", linestyle="--", label="Warning")
-    plt.axhline(alert, color="red", linestyle="--", label="Alert")
+    trend_line = np.poly1d(np.polyfit(np.arange(len(series)), series.values, 1))(
+        np.arange(len(series))
+    )
 
-    plt.title(f"{component}_{characteristic} | {turbine} | Sensor {sensor}")
-    plt.xlabel("Time")
-    plt.ylabel("Amplitude")
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.plot(x, series.values, color=DARK_BLUE, alpha=0.5,
+            linewidth=0.8, label="Raw")
+    ax.plot(x, trend_line, color="#555555", linewidth=1.5,
+            linestyle="--", label="Trend line")
+
+    ax.axhline(warning, color="orange", linewidth=1.2,
+               linestyle="--", label=f"Warning ({warning:.3f})")
+    ax.axhline(alert,   color="red",    linewidth=1.2,
+               linestyle="--", label=f"Alert ({alert:.3f})")
+
+    ax.set_xlabel(x_label, fontsize=10)
+    ax.set_ylabel("Amplitude", fontsize=10)
+    ax.grid(True, linewidth=0.4, alpha=0.5)
 
     if z is not None:
-        text = f"Trend: {trend}\np={p_value:.3f}\nZ={z:.2f}\nStatus={status}"
-        plt.text(
-            0.02, 0.95, text,
-            transform=plt.gca().transAxes,
-            verticalalignment="top"
+        text = f"Trend: {trend}  |  p={p_value:.3f}  |  Z={z:.2f}  |  Slope={slope:.2e}  |  Status={status}"
+        ax.set_title(
+            f"{component}_{characteristic} | {turbine} | Sensor {sensor}\n{text}",
+            fontsize=10
+        )
+    else:
+        ax.set_title(
+            f"{component}_{characteristic} | {turbine} | Sensor {sensor}",
+            fontsize=11
         )
 
-    plt.legend()
+    ax.legend(fontsize=9, loc="upper right",
+              framealpha=0.9, ncol=2)
 
     save_dir = os.path.join(
         output_root,
@@ -153,5 +196,5 @@ def plotting_fsc_trend(group, turbine, sensor, component, characteristic, output
     os.makedirs(save_dir, exist_ok=True)
 
     save_path = os.path.join(save_dir, f"{clean_name(characteristic)}.png")
-    plt.savefig(save_path)
-    plt.close()
+    fig.savefig(save_path, bbox_inches="tight", dpi=120)
+    plt.close(fig)

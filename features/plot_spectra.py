@@ -1,6 +1,8 @@
 import os
 import re
+import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
 from features.amplitude_spectrum import amplitude_spectrum, save_amplitude_spectrum_plot
 from features.fsc import (
@@ -9,22 +11,20 @@ from features.fsc import (
     get_peak_near_frequency
 )
 
-DARK_BLUE = "#0B3D91"
+DARK_BLUE   = "#0B3D91"
+MARKER_COLORS = [
+    "#E63946",
+    "#F4A261",
+    "#2A9D8F",
+    "#E9C46A",
+    "#A8DADC",
+    "#FF006E",
+    "#8338EC",
+    "#FB5607",
+]
 
 
 def clean_name(name):
-    """
-    Clean a string to make it safe for file and directory names.
-
-    The function replaces invalid filesystem characters and spaces
-    to ensure compatibility across operating systems.
-
-    Parameters:
-    name : input string (e.g., turbine name, filename).
-
-    Returns:
-    name(str) : cleaned string with invalid characters replaced by "_".
-    """
     name = str(name)
     name = re.sub(r'[\\/*?:"<>|]', "_", name)
     name = name.replace(" ", "_")
@@ -35,19 +35,13 @@ def save_fft_plot_from_signal(signal, fs, turbine, sensor, filename, output_root
     """
     Compute and save amplitude spectrum plot from a signal.
 
-    The function generates a file path based on turbine and sensor identifiers
-    and saves the amplitude spectrum plot using save_amplitude_spectrum_plot.
-
     Parameters:
-    signal : input discrete-time signal x[n].
-    fs(float) : sampling frequency of the signal (in Hz).
-    turbine : turbine identifier/name.
-    sensor : sensor identifier (e.g., sensor number).
-    filename : name of the source file.
-    output_root(str) : root directory where plots will be saved.
-
-    Returns:
-    None
+    signal      : input discrete-time signal x[n].
+    fs(float)   : sampling frequency (Hz).
+    turbine     : turbine identifier.
+    sensor      : sensor identifier.
+    filename    : source filename.
+    output_root : root directory for plots.
     """
     save_path = os.path.join(
         output_root,
@@ -65,32 +59,24 @@ def save_fft_plot_from_signal(signal, fs, turbine, sensor, filename, output_root
     )
 
 
-def save_fsc_plot_from_processed_signal(sig, turbine, sensor, filename, output_root, band=1.0):
+def save_fsc_plot_from_processed_signal(
+    sig, turbine, sensor, filename, output_root, band=1.0
+):
     """
-    Compute and save frequency-selective characteristics (FSC) plot.
-
-    The function extracts signal and metadata, computes the amplitude spectrum,
-    determines characteristic frequencies based on rotation speed, and highlights
-    peaks near those frequencies.
+    Compute and save FSC plot with dark-blue spectrum and
+    clearly visible per-component colour markers.
 
     Parameters:
-    sig : dictionary containing processed signal data:
-        - "signal" : signal values
-        - "sample_rate" : sampling frequency
-        - "raw" : original raw data
-        - "meta" : metadata (optional)
-    turbine : turbine identifier/name.
-    sensor : sensor identifier (used to select bearing characteristics).
-    filename : name of the source file.
-    output_root(str) : root directory where plots will be saved.
-    band(float) : frequency search window around target frequencies (default is 1.0 Hz).
-
-    Returns:
-    None
+    sig         : dict with signal, sample_rate, raw, meta.
+    turbine     : turbine identifier.
+    sensor      : sensor identifier.
+    filename    : source filename.
+    output_root : root directory for plots.
+    band(float) : Hz window around target frequency (default 1.0).
     """
     signal = sig["signal"]
-    fs = sig["sample_rate"]
-    raw = sig["raw"]
+    fs     = sig["sample_rate"]
+    raw    = sig["raw"]
 
     time_stamp = (
         sig["meta"].get("time_stamp")
@@ -103,53 +89,92 @@ def save_fsc_plot_from_processed_signal(sig, turbine, sensor, filename, output_r
     if not rotation_speed:
         return
 
-    rpm_mean = sum(rotation_speed) / len(rotation_speed)
-    gen_speed_hz = rpm_to_hz(rpm_mean)
+    rpm_mean      = sum(rotation_speed) / len(rotation_speed)
+    gen_speed_hz  = rpm_to_hz(rpm_mean)
 
     frequencies, amplitude = amplitude_spectrum(signal, fs)
-    target_frequencies = all_characteristic_frequencies(int(sensor), gen_speed_hz)
+    target_frequencies     = all_characteristic_frequencies(int(sensor), gen_speed_hz)
 
     if len(amplitude) == 0:
         return
 
-    plt.figure(figsize=(12, 5))
-    plt.plot(frequencies, amplitude, color=DARK_BLUE)
+    fig, ax = plt.subplots(figsize=(14, 5))
+    ax.plot(frequencies, amplitude, color=DARK_BLUE, linewidth=0.8, label="_nolegend_")
 
     ymax = max(amplitude)
 
+    components = {}
+    for item in target_frequencies:
+        comp = item.get("component", "unknown")
+        if comp not in components:
+            components[comp] = MARKER_COLORS[len(components) % len(MARKER_COLORS)]
+
+    legend_added = set()
+
     for item in target_frequencies:
         target_freq = item["frequency"]
+        char        = item["characteristic"]
+        comp        = item.get("component", "unknown")
+        color       = components[comp]
 
         if target_freq > fs / 2:
             continue
 
-        plt.axvline(target_freq, linestyle="--", alpha=0.6, color=DARK_BLUE)
+        ax.axvline(target_freq, linestyle="--", linewidth=0.8, alpha=0.5, color=color)
 
         peak_freq, peak_amp = get_peak_near_frequency(
-            frequencies,
-            amplitude,
-            target_freq,
-            band=band
+            frequencies, amplitude, target_freq, band=band
         )
 
+        label = comp if comp not in legend_added else "_nolegend_"
+        legend_added.add(comp)
+
         if peak_freq is not None and peak_amp is not None:
-            plt.plot(peak_freq, peak_amp, "o", color="red")
+            ax.plot(peak_freq, peak_amp, "o", color=color,
+                    markersize=6, zorder=5, label=label)
 
-            plt.text(
-                peak_freq,
-                peak_amp,
-                item["characteristic"],
-                fontsize=8,
+            ax.annotate(
+                char,
+                xy=(peak_freq, peak_amp),
+                xytext=(0, 10),
+                textcoords="offset points",
+                fontsize=7,
+                color=color,
                 rotation=90,
-                verticalalignment="bottom"
+                va="bottom",
+                ha="center",
+                bbox=dict(
+                    boxstyle="round,pad=0.15",
+                    facecolor="white",
+                    edgecolor=color,
+                    alpha=0.85,
+                    linewidth=0.7,
+                ),
             )
+        else:
+            ax.plot(target_freq, ymax * 0.05, "^",
+                    color=color, markersize=5, zorder=4, label=label)
 
-    plt.xlabel("Frequency (Hz)")
-    plt.ylabel("Amplitude")
-    plt.title(f"{turbine} | sensor {sensor} | {filename} | {time_stamp}")
-    plt.xlim(0, fs / 2)
-    plt.ylim(0, ymax * 1.1)
-    plt.grid(True)
+    ax.set_xlabel("Frequency (Hz)", fontsize=10)
+    ax.set_ylabel("Amplitude",      fontsize=10)
+    ax.set_title(
+        f"{turbine} | sensor {sensor} | {filename} | {time_stamp}",
+        fontsize=10
+    )
+    ax.set_xlim(0, fs / 2)
+    ax.set_ylim(0, ymax * 1.15)
+    ax.grid(True, linewidth=0.4, alpha=0.5)
+    ax.xaxis.set_major_locator(ticker.AutoLocator())
+
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(
+        handles, labels,
+        loc="upper right",
+        fontsize=8,
+        framealpha=0.9,
+        title="Component",
+        title_fontsize=8,
+    )
 
     save_dir = os.path.join(
         output_root,
@@ -160,5 +185,5 @@ def save_fsc_plot_from_processed_signal(sig, turbine, sensor, filename, output_r
     os.makedirs(save_dir, exist_ok=True)
 
     save_path = os.path.join(save_dir, f"{clean_name(filename)}.png")
-    plt.savefig(save_path, bbox_inches="tight")
-    plt.close()
+    fig.savefig(save_path, bbox_inches="tight", dpi=120)
+    plt.close(fig)

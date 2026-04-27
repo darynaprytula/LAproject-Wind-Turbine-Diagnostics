@@ -2,9 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from features.fft import manual_fft
 
-
 DARK_BLUE = "#0B3D91"
-
 
 def amplitude_spectrum(signal, fs):
     """

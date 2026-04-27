@@ -48,15 +48,15 @@ def parse_filename(filename: str) -> dict:
 
     returns:
     dictionary containing:
-        - start time: measurement start timestamp
-        - end time: measurement end timestamp
-        - duration: signal duration
-        - operating conditions: operating mode (e.g. LPC)
-        - sensor num: sensor identifier
-        - signal type: signal type (e.g. acceleration)
-        - resampling mode: resampling mode
-        - frequency span: frequency range (e.g. 1K)
-        - LOR: line of resolution (scaled by 100)
+        - Signal start time (ms): measurement start timestamp
+        - Signal end time (ms): measurement end timestamp
+        - Duration (s): signal duration in seconds
+        - Operating conditions: operating mode (e.g. LPC)
+        - sensor_num: sensor identifier
+        - Signal type: signal type (e.g. acceleration)
+        - Resampling: resampling mode
+        - Frequency span: frequency range (e.g. 1K)
+        - Lines of resolution: line of resolution (scaled by 100)
     """
 
     parts = filename.split("_")
@@ -72,13 +72,13 @@ def parse_filename(filename: str) -> dict:
     lor = int(other[3])
 
     return {
-        "start time": int(start_time),
-        "end time": int(end_time),
-        "duration": int(duration),
-        "operating conditions": operating_conditions,
-        "sensor_num": sensor_num,
-        "signal type (acceleration)": signal_type,
-        "resampling mode": resampling_mode,
-        "frequency span": frequency_span,
-        "LOR": lor * 100
+        "Signal start time (ms)": start_time,
+        "Signal end time (ms)":   end_time,
+        "Duration (s)":           int(duration),
+        "Operating conditions":   operating_conditions,
+        "sensor_num":             sensor_num,
+        "Signal type":            signal_type,
+        "Resampling":             resampling_mode,
+        "Frequency span":         frequency_span,
+        "Lines of resolution":    lor * 100,
     }
