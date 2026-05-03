@@ -34,7 +34,7 @@ We use real vibration data collected from wind turbines:
 
 Each signal contains both vibration data and metadata (timestamp, operating conditions, sensor ID, etc.), which are used for further analysis.
 
-Note on timestamp: all timestamps in the dataset have a +10 year offset applied  by the data provider. A value corresponding to January 2016 in Unix time represents January 2026 in this dataset. 
+Note on timestamp: all timestamps in the dataset have a +10 year offset applied by the data provider. A value corresponding to January 2016 in Unix time represents January 2026 in this dataset.
 
 ---
 
@@ -168,6 +168,7 @@ Planned:
 - Python  
 - NumPy  
 - Matplotlib  
+
 ---
 
 ## Project Structure
@@ -197,7 +198,7 @@ Contains configuration files and physical parameters used in the analysis.
 
 Utility functions used across the project.
 
- - `helpers.py` – helper functions (e.g., string cleaning for safe filenames)
+  - `helpers.py` – helper functions (e.g., string cleaning for safe filenames)
 
 ---
 
@@ -206,7 +207,8 @@ Utility functions used across the project.
 Responsible for loading and organizing raw vibration data.
 
   - `signal_loader.py` – loads vibration signals and metadata from files
-  - `sorting_signals.py` – groups and structures signals (by turbine, sensor, etc.)
+  - `sorting_signals.py` – groups and structures signals by turbine and sensor
+  - `organize_new_signals.py` – adds new signal files into existing sorted data folders
 
 ---
 
@@ -216,8 +218,8 @@ Implements feature extraction from vibration signals in both time and frequency 
 
   - `fft.py` – manual FFT implementation (Cooley–Tukey) and comparison with NumPy
   - `amplitude_spectrum.py` – computation of one-sided amplitude spectrum
-  - `broadband_characteristics.py` – broadband vibration features
-  - `operating_stats.py` – time-domain statistical features (RMS, kurtosis, etc.)
+  - `broadbound_characterístics.py` – broadband vibration statistical features (RMS, kurtosis, crest factor, etc.)
+  - `operating_stats.py` – mean operating parameters from signal metadata (wind speed, power, RPM)
   - `fsc.py` – frequency-selective characteristics extraction
   - `plot_spectra.py` – visualization of spectra
   - `compare_plots.py` – comparison plots (manual FFT vs NumPy FFT)
@@ -228,12 +230,13 @@ Implements feature extraction from vibration signals in both time and frequency 
 
 Implements trend detection and fault diagnostics.
 
-  - `trend_analysis.py` – main logic for trend computation
-  - `metrics_trend.py` – tracking feature evolution over time
-  - fsc_trend.py` – trends of frequency-selective features
-  - `classification.py` – classification of potential defects
-  - `thresholds.py` – threshold definitions for anomaly detection
+  - `trend_analisys.py` – Mann–Kendall trend test implementation
+  - `metrics_trend.py` – tracking time-domain feature evolution over time
+  - `fsc_trend.py` – trends of frequency-selective features
+  - `classification.py` – classification of potential defects based on trend and Z-score
+  - `thresholds.py` – threshold definitions for anomaly detection (warning: mean + 3σ, alert: mean + 6σ)
   - `trend_plots.py` – visualization of trends
+  - `trend_exporter.py` – saves trend results to colour-coded Excel files
 
 ---
 
@@ -245,6 +248,7 @@ Generated outputs and visualizations.
   - `fft_plots/` – frequency spectra
   - `fsc_plots/` – frequency-selective characteristics
   - `trends_results/time_features/` – trend analysis results for time-domain features
+  - `trends_results/spectral_features/` – trend analysis results for FSC amplitudes
 
 ---
 
@@ -254,7 +258,7 @@ Core pipeline execution.
 
   - `main.py` – entry point of the project
   - `process_file.py` – processes a single signal through the full pipeline
-  - `results_exporter.py` – saves computed features and results to files (e.g., CSV)
+  - `results_exporter.py` – saves computed features and results to formatted Excel files
 
 ---
 
