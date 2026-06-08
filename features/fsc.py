@@ -18,7 +18,7 @@ def rpm_to_hz(rpm):
     return rpm / 60.0
 
 
-def get_amplitude_at_frequency(frequencies, amplitude, target_freq, band=1.0):
+def get_amplitude_at_frequency(frequencies, amplitude, target_freq, band=0.156):
     """
     Find maximum amplitude near target frequency.
 
